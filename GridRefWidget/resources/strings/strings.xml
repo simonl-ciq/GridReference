@@ -1,0 +1,6 @@
+<strings>
+    <string id="AppName">OS Grid Reference</string>
+
+    <string id="label">GPS :</string>
+    <string id="accuracy">Not set</string>
+</strings>
