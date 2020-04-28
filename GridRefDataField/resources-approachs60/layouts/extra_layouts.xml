@@ -1,0 +1,17 @@
+<layouts>
+    <layout id="TopCentreLayout">
+        <drawable class="Background" />
+        <label id="label" x="center" y="6" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_TINY" />
+        <label id="value" x="center" y="39" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_LARGE" />
+    </layout>
+    <layout id="MiddleCentreLayout">
+        <drawable class="Background" />
+        <label id="label" x="center" y="0" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_TINY" />
+        <label id="value" x="center" y="36" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_LARGE" />
+    </layout>
+    <layout id="BottomCentreLayout">
+        <drawable class="Background" ></drawable>
+        <label id="label" x="center" y="0" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_TINY" />
+        <label id="value" x="center" y="20" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_LARGE" />
+    </layout>
+</layouts>

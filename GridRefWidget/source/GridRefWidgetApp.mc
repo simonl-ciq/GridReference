@@ -21,4 +21,8 @@ class GridRefWidgetApp extends App.AppBase {
         return [ GRView, new GridRefWidgetDelegate(GRView) ];
     }
 
+(:glance)
+    function getGlanceView() {
+        return [ new GridRefWidgetGlanceView() ];
+    }
 }

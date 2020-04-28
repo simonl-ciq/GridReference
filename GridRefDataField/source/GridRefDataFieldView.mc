@@ -1,12 +1,23 @@
 using Toybox.WatchUi;
-using Toybox.Graphics;
+using Toybox.Graphics as Gfx;
 using Toybox.Application as App;
 using Toybox.Application.Properties as Props;
 using GridRefClasses as GridRef;
 
+using Toybox.System as Sys;
+
 class GridRefDataFieldView extends WatchUi.DataField {
+	hidden var mLaidOut = false;
+
     hidden var mDigits;
     hidden var mString = "";
+    
+    
+    hidden var mWidth;
+    hidden var mValue = "AB 1234 5678";
+    hidden var mTestString = "AB 1234 5678";
+    hidden var mLabel = "Grid Ref";
+    hidden var NoGPSData = "No GPS signal";
 
     // Set the label of the data field here.
     function initialize() {
@@ -17,58 +28,1148 @@ class GridRefDataFieldView extends WatchUi.DataField {
 	    } else {
 	        mDigits = App.getApp().getProperty("Digits");
 	    }
+	    if (mDigits == 4) {
+	    	mTestString = "AB 12 34";
+	    } else 
+	    if (mDigits == 6) {
+	    	mTestString = "AB 123 456";
+	    } else 
+	    if (mDigits == 8) {
+	    	mTestString = "AB 1234 5678";
+	    } else 
+	    if (mDigits == 10) {
+	    	mTestString = "AB 12345 67890";
+	    }
 
     }
+
+// ----------------------------------------------
+
+	(:approach60)
+    function getYAdjust(dc, obscurityFlags) {
+    	var adj = -1;
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				adj = 4;
+		} else
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				if (dc.getHeight() < 100) {adj = 10;} else {adj = 15;}
+		}
+	    return adj;
+    }
+
+	(:approach62)
+    function getYAdjust(dc, obscurityFlags) {
+    	var adj = -1;
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				adj = 0;
+		} else
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				if (dc.getHeight() < 100) {adj = 15;} else {adj = 25;}
+		} else
+		if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				if (dc.getHeight() < 100) {adj = 1;}
+		}
+	    return adj;
+    }
+
+	(:marvel)
+    function getYAdjust(dc, obscurityFlags) {
+    	var adj = -1;
+		if (obscurityFlags == OBSCURE_LEFT || obscurityFlags == OBSCURE_RIGHT) {
+			adj = 9;
+		} else 
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				adj = 1;
+		} else 
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				adj = (dc.getHeight() > 80) ? 18 : 12;
+		}
+	    return adj;
+    }
+
+	(:other_round)
+    function getYAdjust(dc, obscurityFlags) {
+    	var adj = -1;
+    	var height = dc.getHeight();
+		if (obscurityFlags == OBSCURE_LEFT || obscurityFlags == OBSCURE_RIGHT) {
+			adj = 5;
+		} else 
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			adj = 0;
+		} else 
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			if (height > 90) {
+				adj = 25;
+			} else {
+				adj = mDigits < 8 ? 11 : 15;
+			}
+		}
+	    return adj;
+    }
+
+	(:fr2945)
+    function getYAdjust(dc, obscurityFlags) {
+    	var adj = -1;
+    	var height = dc.getHeight();
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT) || obscurityFlags == (OBSCURE_TOP | OBSCURE_RIGHT)) {
+				adj = 5;
+		} else 
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT) || obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_RIGHT)) {
+				adj = 30;
+		} else 
+		if (obscurityFlags == OBSCURE_LEFT || obscurityFlags == OBSCURE_RIGHT) {
+				adj = 12;
+		} else 
+		if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				if (height > 80) {
+					adj = 1;
+				}
+		} else 
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				if (height < 90) {adj = 2;}
+		} else 
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				if (height < 90) {adj = 15;}
+		}
+	    return adj;
+    }
+
+	(:fr735xt)
+    function getYAdjust(dc, obscurityFlags) {
+    	var adj = -1;
+		if (obscurityFlags == OBSCURE_LEFT || obscurityFlags == OBSCURE_RIGHT) {
+				adj = 1;
+		} else 
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				adj = 2;
+		} else 
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				adj = 5;
+		}
+	    return adj;
+    }
+
+	(:marq)
+    function getYAdjust(dc, obscurityFlags) {
+    	var adj = -1;
+    	var height = dc.getHeight();
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT) || obscurityFlags == (OBSCURE_TOP | OBSCURE_RIGHT)) {
+				adj = 5;
+		} else 
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT) || obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_RIGHT)) {
+				adj = 30;
+		} else 
+		if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				adj = 0;
+		} else
+		if (obscurityFlags == OBSCURE_LEFT || obscurityFlags == OBSCURE_RIGHT) {
+				adj = 0;
+		} else 
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				adj = height > 90 ? 0 : 0;
+		} else 
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				adj = height > 90 ? 18 : 13;
+		}
+	    return adj;
+    }
+
+	(:venu)
+    function getYAdjust(dc, obscurityFlags) {
+    	var adj = -1;
+		if (obscurityFlags == OBSCURE_LEFT || obscurityFlags == OBSCURE_RIGHT) {
+			adj = 20;
+		} else
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			adj = (dc.getHeight() > 190) ? 15 : 12;
+		} else
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			adj = (dc.getHeight() > 190) ? 25 : 20;
+		}
+	    return adj;
+    }
+
+	(:vivo)
+    function getYAdjust(dc, obscurityFlags) {
+    	var adj = -1;
+    	var height = dc.getHeight();
+		if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT) ) {
+			if (height > 100) {
+				adj = 16;
+			} else
+			if (height > 70) {
+				adj = 4;
+			} else {
+				adj = 1;
+			}
+			
+		} else
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			adj = 0;
+		} else 
+		if (obscurityFlags == OBSCURE_LEFT || obscurityFlags == OBSCURE_RIGHT) {
+			adj = 8;
+		} else 
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			if (height > 125) {adj = 26;}
+			else if (height > 115) {adj = 15;}
+			else if (height > 105) {adj = 20;}
+			else if (height > 75) {adj = 18;}
+			else {adj = 8;}
+		}
+	    return adj;
+    }
+    
+	(:avenger)
+    function getYAdjust(dc, obscurityFlags) {
+    	var adj = -1;
+		if (obscurityFlags == OBSCURE_LEFT || obscurityFlags == OBSCURE_RIGHT) {
+			adj = 4;
+		} else
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				adj = 3;
+		} else 
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				adj = 15;
+		}
+	    return adj;
+    }
+
+	(:fenix6)
+    function getYAdjust(dc, obscurityFlags) {
+    	return null;
+    }
+    
+	(:fenix6s)
+    function getYAdjust(dc, obscurityFlags) {
+    	return null;
+    }
+    
+	(:fenix6xpro)
+    function getYAdjust(dc, obscurityFlags) {
+    	return null;
+    }
+
+// ---
+	(:vivoactive_hr)
+    function getYAdjust(dc, obscurityFlags) {
+    	var height = dc.getHeight();
+		var ret = 15;
+		if (height < 80) {ret = 8;}
+		else if (height < 105) {ret = 3;}
+	    return ret;
+    }
+
+	(:e520_820)
+    function getYAdjust(dc, obscurityFlags) {
+	    return 5;
+    }
+
+	(:e530_830)
+    function getYAdjust(dc, obscurityFlags) {
+	    return 0;
+    }
+
+	(:e130)
+    function getYAdjust(dc, obscurityFlags) {
+	    return 10;
+    }
+
+	(:other_rectanglesY)
+    function getYAdjust(dc, obscurityFlags) {
+	    return -1;
+    }
+
+// ----------------------------------------------
+
+	(:approach60)
+    function doFont(valueView, ySpace, myF) {
+		if (DataField.getObscurityFlags() != (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT) || ySpace > 50) {
+			return myF;
+		}
+		myF = 5 - mDigits / 2;
+		if (myF > 0) { myF++; }
+		valueView.setFont(myF);
+		return myF;
+    }
+
+	(:approach62)
+    function doFont(valueView, ySpace, myF) {
+		var obs = DataField.getObscurityFlags();
+		myF = Gfx.FONT_LARGE;
+   		if (ySpace < 77) {
+			if (mDigits > 6) {
+				myF = 8 - (mDigits / 2);
+				if (obs == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+					myF--;
+				}
+			}
+		}
+		valueView.setFont(myF);
+		return myF;
+    }
+
+	(:marvel)
+    function doFont(valueView, ySpace, myF) {
+		var obs = DataField.getObscurityFlags();
+		if (obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
+			switch (mDigits) {
+			case 4:
+				myF = Gfx.FONT_LARGE;
+				break;
+			case 6:
+				myF = Gfx.FONT_SMALL;
+				break;
+			case 8:
+				myF = Gfx.FONT_TINY;
+				break;
+			case 10:
+				myF = Gfx.FONT_XTINY;
+				break;
+			}
+		} else 
+   		if (ySpace < 77) {
+			myF = Gfx.FONT_LARGE;
+			if (mDigits > 6) {
+				myF = 8 - (mDigits / 2);
+				if (obs == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+					myF--;
+				}
+			}
+		}
+		valueView.setFont(myF);
+		return myF;
+    }
+
+	(:other_round)
+    function doFont(valueView, ySpace, myF) {
+		var obs = DataField.getObscurityFlags();
+		if (obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
+			switch (mDigits) {
+			case 4:
+				myF = Gfx.FONT_LARGE;
+				break;
+			case 6:
+				myF = Gfx.FONT_SMALL;
+				break;
+			case 8:
+				myF = Gfx.FONT_TINY;
+				break;
+			case 10:
+				myF = Gfx.FONT_XTINY;
+				break;
+			}
+		} else 
+   		if (ySpace < 77) {
+			myF = Gfx.FONT_LARGE;
+			if (mDigits > 6) {
+				myF = 8 - (mDigits / 2);
+				if (obs == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+					myF--;
+				}
+			}
+		}
+		valueView.setFont(myF);
+		return myF;
+    }
+
+	(:fr2945)
+    function doFont(valueView, ySpace, myF) {
+		var obs = DataField.getObscurityFlags();
+		if (obs == (OBSCURE_TOP | OBSCURE_LEFT) || obs == (OBSCURE_TOP | OBSCURE_RIGHT) || obs == (OBSCURE_BOTTOM | OBSCURE_LEFT) || obs == (OBSCURE_BOTTOM | OBSCURE_RIGHT)) {
+			myF = Gfx.FONT_XTINY;
+			if (mDigits < 8) {
+	    		myF = Gfx.FONT_TINY;
+	    	}
+		} else
+		if (obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
+			myF = Gfx.FONT_SMALL;
+			if (mDigits == 6 && ySpace < 38) {
+				if (obs == OBSCURE_LEFT) {
+		    		valueView.locX += 3;
+				} else if (obs == OBSCURE_RIGHT) {
+		    		valueView.locX -= 4;
+		    	}
+	    	} else
+			if (mDigits == 8) {
+	    		myF = (ySpace < 38) ? Gfx.FONT_XTINY : Gfx.FONT_TINY;
+	    	} else
+			if (mDigits == 10) {
+	    		myF = Gfx.FONT_XTINY;
+	    	}
+		} else 
+		if (obs == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			myF = Gfx.FONT_LARGE;
+	    	if (mDigits == 8) {
+	    		myF = Gfx.FONT_MEDIUM;
+	    	} else if (mDigits == 10) {
+				if (ySpace < 30) {
+		    		myF = Gfx.FONT_SMALL;
+	    		} else if (ySpace < 49) {
+		    		myF = Gfx.FONT_MEDIUM;
+	    		}
+	    	}
+		} else
+		if (obs == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			myF = Gfx.FONT_LARGE;
+			if (mDigits < 8) {
+				if (ySpace < 50) {
+		    		myF = Gfx.FONT_SMALL;
+	    		}
+	    	} if (mDigits == 8) {
+				if (ySpace < 50) {
+		    		myF = Gfx.FONT_SMALL;
+	    		} else {
+	    			myF = Gfx.FONT_MEDIUM;
+	    		}
+	    	} else if (mDigits == 10) {
+				if (ySpace < 50) {
+		    		myF = Gfx.FONT_TINY;
+	    		} else {
+	    			myF = Gfx.FONT_SMALL;
+	    		}
+	    	}
+		}
+		valueView.setFont(myF);
+		return myF;
+    }
+
+	(:fr735xt)
+    function doFont(valueView, ySpace, myF) {
+		var obs = DataField.getObscurityFlags();
+		if (obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
+			switch (mDigits) {
+			case 4:
+				myF = Gfx.FONT_LARGE;
+				break;
+			case 6:
+			case 8:
+				myF = Gfx.FONT_MEDIUM;
+				break;
+			case 10:
+				myF = Gfx.FONT_XTINY;
+				break;
+			}
+		} else
+		if (obs == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+	   		if (ySpace < 40 && mDigits == 10) {
+   				myF = Gfx.FONT_MEDIUM;
+			}
+		}
+		valueView.setFont(myF);
+		return myF;
+	}
+
+	(:marq)
+    function doFont(valueView, ySpace, myF) {
+		var obs = DataField.getObscurityFlags();
+		if (obs == (OBSCURE_TOP | OBSCURE_LEFT) || obs == (OBSCURE_TOP | OBSCURE_RIGHT) || obs == (OBSCURE_BOTTOM | OBSCURE_LEFT) || obs == (OBSCURE_BOTTOM | OBSCURE_RIGHT)) {
+			switch (mDigits) {
+			case 4:
+				myF = Gfx.FONT_SMALL;
+				break;
+			case 6:
+				myF = Gfx.FONT_TINY;
+				break;
+			case 8:
+			case 10:
+				myF = Gfx.FONT_XTINY;
+				break;
+			}
+		} else 
+		if (obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
+			switch (mDigits) {
+			case 4:
+				myF = Gfx.FONT_MEDIUM;
+				break;
+			case 6:
+				myF = Gfx.FONT_SMALL;
+				break;
+			case 8:
+			case 10:
+				myF = Gfx.FONT_XTINY;
+				break;
+			}
+		} else
+		if (obs == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			if (ySpace < 65 && mDigits == 10) {
+				myF = Gfx.FONT_MEDIUM;
+			}
+		} else
+		if (obs == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			if (ySpace < 65) {
+				myF = (mDigits == 10) ? Gfx.FONT_SMALL : Gfx.FONT_MEDIUM;
+			}
+		}
+		valueView.setFont(myF);
+		return myF;
+    }
+
+	(:venu)
+    function doFont(valueView, ySpace, myF) {
+		var obs = DataField.getObscurityFlags();
+		if (obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
+			switch (mDigits) {
+			case 6:
+				myF = Gfx.FONT_SMALL;
+				break;
+			case 8:
+				myF = Gfx.FONT_TINY;
+				break;
+			case 10:
+				myF = Gfx.FONT_XTINY;
+				break;
+			}
+		} else
+		if (obs == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+   			if (mDigits == 10) {
+   				if (ySpace < 90) {
+					myF = Gfx.FONT_SMALL;
+				}
+			}
+   			if (mDigits == 8) {
+   				if (ySpace < 90) {
+					myF = Gfx.FONT_MEDIUM;
+				}
+			}
+		} else
+		if (obs == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+   			if (mDigits == 10) {
+   				if (ySpace < 90) {
+					myF = Gfx.FONT_SMALL;
+				}
+			}
+   			if (mDigits == 8) {
+   				if (ySpace < 90) {
+					myF = Gfx.FONT_MEDIUM;
+				}
+			}
+		}
+		valueView.setFont(myF);
+		return myF;
+    }
+
+	(:vivo)
+    function doFont(valueView, ySpace, myF) {
+		var obs = DataField.getObscurityFlags();
+		if (obs == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+   			if (mDigits == 10) {
+   				if (ySpace < 50) {
+					myF = Gfx.FONT_TINY;
+				} else
+   				if (ySpace < 60) {
+					myF = Gfx.FONT_SMALL;
+				}
+				
+			} else
+   			if (mDigits == 8 && ySpace < 50) {
+				myF = Gfx.FONT_MEDIUM;
+   			}
+		} else
+		if (obs == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+   			if (mDigits == 10 && ySpace < 60) {
+				myF = Gfx.FONT_MEDIUM;
+			}
+		} else
+		if (obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
+   			if (mDigits == 10) {
+				myF = Gfx.FONT_XTINY;
+			} else
+   			if (mDigits == 8) {
+				myF = Gfx.FONT_TINY;
+			} else {
+				myF = Gfx.FONT_SMALL;
+			}
+		}
+		valueView.setFont(myF);
+		return myF;
+    }
+
+	(:avenger)
+    function doFont(valueView, ySpace, myF) {
+		var obs = DataField.getObscurityFlags();
+		if (obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
+		switch (mDigits) {
+			case 4:
+				myF = Gfx.FONT_MEDIUM;
+				break;
+			case 6:
+				myF = Gfx.FONT_SMALL;
+				break;
+			case 8:
+				myF = Gfx.FONT_TINY;
+				break;
+			case 10:
+				myF = Gfx.FONT_XTINY;
+				break;
+			}
+		} else if ((obs == OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT) ||
+		          (obs == OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+		switch (mDigits) {
+			case 8:
+				if (ySpace < 75) {myF = Gfx.FONT_MEDIUM;}
+				break;
+			case 10:
+				if (ySpace < 75) {myF = Gfx.FONT_SMALL;} else {myF = Gfx.FONT_MEDIUM;}
+				break;
+			default:
+				break;
+			}
+		}
+		valueView.setFont(myF);
+		return myF;
+    }
+
+
+// ----------------------------------------------
+
+	(:rectangle_layout)
+	function doLayout(dc, yAdjust) {
+       	var width = dc.getWidth()+1;
+
+       	var valueView = View.findDrawableById("value");
+        var height = dc.getHeight();
+        var labelHt = dc.getFontHeight(Gfx.FONT_TINY);
+		var ySpace = height - labelHt + yAdjust;
+		var d = [0, 0];
+		var myF = 4;
+  		var f = 4;
+
+		while (f >= 0) {
+       		d = dc.getTextDimensions(mTestString, f);
+   			myF = f;
+    		if (d[0] <= width && d[1] <= ySpace) {
+		   		break;
+       		}
+       		f = f-1;
+       	}
+
+   		var valueAsc = Graphics.getFontAscent(myF);
+        valueView.setFont(myF);
+		valueView.locY = labelHt + ((ySpace - valueAsc - 2) / 2) - yAdjust;
+	}
+
+	(:round_layout)
+	function doLayout(dc, yAdjust) {
+
+       	var width = dc.getWidth();
+
+		if (yAdjust >= 0) {
+	        var height = dc.getHeight();
+    	    var labelHt = dc.getFontHeight(Gfx.FONT_TINY);
+	       	var labelView = View.findDrawableById("label");
+    	   	var valueView = View.findDrawableById("value");
+			var ySpace = height - labelView.locY - labelHt;
+			var myF = doFont(valueView, ySpace, Gfx.FONT_LARGE);
+			var fh = dc.getFontHeight(myF);
+			valueView.locY = labelView.locY + labelHt  + (ySpace - fh) / 2 - yAdjust;
+	    }
+	}
+
+	(:fenix6s)
+	function doLayout(dc, yAdjust) {
+        var obscurityFlags = DataField.getObscurityFlags();
+       	var width = dc.getWidth();
+        var height = dc.getHeight();
+   	   	var valueView = View.findDrawableById("value");
+       	var myF = Gfx.FONT_LARGE;
+
+        // Top left quadrant so we'll use the top left layout - 3
+        // Top right quadrant so we'll use the top right layout - 6
+
+        // Top sector so we'll use the generic, centered layout shifted - 7
+        if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			if (height < 70) {
+				if (mDigits < 8) {
+					valueView.locY -= 41;
+					if (mDigits == 6) {
+						myF = Gfx.FONT_MEDIUM;
+					}
+				} else {
+					myF = Gfx.FONT_SMALL;
+					valueView.locY -= 35;
+				}
+			} else if (height < 90) {
+				valueView.locY -= 25;
+				switch (mDigits) {
+				case 6:
+					myF = Gfx.FONT_LARGE;
+					break;
+				case 8:
+					myF = Gfx.FONT_MEDIUM;
+					break;
+				case 10:
+					myF = Gfx.FONT_MEDIUM;
+					break;
+				}
+			}
+        // Middle sector so we'll use the generic, centered layout shrunk - 5
+        } else if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			if (height < 60) {
+//				myF = Gfx.FONT_MEDIUM;
+				valueView.locY -= 4;
+			} else if (height > 80) {
+				valueView.locY += 10;
+			}
+        // Middle sector left so we'll use the generic, centered layout shrunk - 1
+        } else if (obscurityFlags == (OBSCURE_LEFT)) {
+        	switch (mDigits) {
+        	case 10:
+        	case  8:
+        		myF = Gfx.FONT_XTINY;
+				if (height < 65) {
+					View.findDrawableById("label").locX += 4;
+					valueView.locX += 4;
+					valueView.locY += 4;
+				} else {
+					valueView.locY += 8;
+				}
+        		break;
+        	case  6:
+        		myF = Gfx.FONT_SMALL;
+				if (height < 65) {
+					View.findDrawableById("label").locX += 3;
+					valueView.locX += 3;
+					valueView.locY -= 5;
+				} else {
+					valueView.locY += 4;
+				}
+        		break;
+        	case  4:
+        		myF = Gfx.FONT_MEDIUM;
+				if (height < 65) {
+					View.findDrawableById("label").locX += 4;
+					valueView.locX += 4;
+					valueView.locY -= 2;
+				} else {
+					valueView.locY += 3;
+				}
+        		break;
+        	}
+        // Middle sector right so we'll use the generic, centered layout shrunk - 4
+        } else if (obscurityFlags == (OBSCURE_RIGHT)) {
+        	switch (mDigits) {
+        	case 10:
+        	case  8:
+        		myF = Gfx.FONT_XTINY;
+				if (height < 65) {
+					View.findDrawableById("label").locX -= 4;
+					valueView.locX -= 4;
+					valueView.locY += 4;
+				} else {
+					valueView.locY += 8;
+				}
+        		break;
+        	case  6:
+        		myF = Gfx.FONT_SMALL;
+				if (height < 65) {
+					View.findDrawableById("label").locX -= 3;
+					valueView.locX -= 3;
+					valueView.locY -= 5;
+				} else {
+					valueView.locY += 4;
+				}
+        		break;
+        	case  4:
+        		myF = Gfx.FONT_MEDIUM;
+				if (height < 65) {
+					View.findDrawableById("label").locX -= 4;
+					valueView.locX -= 4;
+					valueView.locY -= 2;
+				} else {
+					valueView.locY += 3;
+				}
+        		break;
+        	}
+
+        // Top left quadrant so we'll use the bottom left layout - 9
+        // Top right quadrant so we'll use the bottom right layout - 12
+        // Bottom left quadrant so we'll use the bottom left layout - 9
+        // Bottom right quadrant so we'll use the bottom right layout - 12
+        } else if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT) || obscurityFlags == (OBSCURE_TOP | OBSCURE_RIGHT) ||
+                   obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT) || obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_RIGHT) ) {
+        	switch (mDigits) {
+        	case 10:
+        	case  8:
+        		myF = Gfx.FONT_XTINY;
+        		break;
+        	case  6:
+        		myF = Gfx.FONT_TINY;
+				valueView.locY -= 8;
+        		break;
+        	case  4:
+        		myF = Gfx.FONT_MEDIUM;
+				valueView.locY -= 12;
+        		break;
+        	}
+        // Bottom sector so we'll use the generic, centered layout upside down - 13
+        } else if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			if (height < 70) {
+				switch (mDigits) {
+				case 10:
+					valueView.locY -= 6;
+				case 8:
+					myF = Gfx.FONT_TINY;
+					valueView.locY -= 2;
+					break;
+				case 6:
+					myF = Gfx.FONT_SMALL;
+					valueView.locY -= 2;
+					break;
+				case 4:
+					myF = Gfx.FONT_MEDIUM;
+					valueView.locY -= 4;
+					break;
+				}
+			} else if (height < 100) {
+				if (mDigits == 10) {
+					if (height > 77) {
+						myF = Gfx.FONT_MEDIUM;
+						if (height > 80) {
+							valueView.locY -= 8;
+						} else {
+							valueView.locY -= 7;
+						}
+					} else {
+						myF = Gfx.FONT_SMALL;
+					}
+				}
+				else if (mDigits == 8) {
+					myF = Gfx.FONT_MEDIUM;
+					if (height > 76) {
+						valueView.locY += 4;
+					} else {
+						valueView.locY -= 4;
+					}
+				}
+				else if (mDigits == 6 && height > 76) {
+					valueView.locY += 6;
+				}
+				else if (mDigits == 4) {
+					if (height > 76) {
+						valueView.locY += 8;
+					} else {
+						valueView.locY += 6;
+					}
+				}
+			}
+			else if (mDigits < 10) {
+				valueView.locY += 15;
+			}
+		}
+
+		if (myF != null) {
+			valueView.setFont(myF);
+		}
+	}
+
+	(:fenix6)
+	function doLayout(dc, yAdjust) {
+        var obscurityFlags = DataField.getObscurityFlags();
+       	var width = dc.getWidth();
+        var height = dc.getHeight();
+   	   	var valueView = View.findDrawableById("value");
+       	var myF = Gfx.FONT_LARGE;
+
+        // Top left quadrant so we'll use the top left layout - 3
+        // Top right quadrant so we'll use the top right layout - 6
+
+        // Top sector so we'll use the generic, centered layout shifted - 7
+        if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			if (height < 70) {
+				if (mDigits < 8) {
+					valueView.locY -= 41;
+					if (mDigits == 6) {
+						myF = Gfx.FONT_MEDIUM;
+					}
+				} else {
+					myF = Gfx.FONT_SMALL;
+					valueView.locY -= 35;
+				}
+			} else if (height < 90) {
+				valueView.locY -= 25;
+				switch (mDigits) {
+				case 6:
+					myF = Gfx.FONT_MEDIUM;
+					break;
+				case 8:
+					myF = Gfx.FONT_MEDIUM;
+					break;
+				case 10:
+					myF = Gfx.FONT_SMALL;
+					break;
+				}
+			} else if (height < 100) {
+				if (mDigits < 10) {
+					valueView.locY -= 20;
+				} else {
+					valueView.locY -= 12;
+				}
+			}
+        // Middle sector so we'll use the generic, centered layout shrunk - 5
+        } else if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			if (height < 60) {
+				myF = Gfx.FONT_TINY;
+			} else if (height < 70) {
+				myF = Gfx.FONT_LARGE;
+				valueView.locY -= 12;
+			} else if (height < 85) {
+				valueView.locY -= 3;
+			}
+        // Middle sector left so we'll use the generic, centered layout shrunk - 1
+        } else if (obscurityFlags == (OBSCURE_LEFT)) {
+        	switch (mDigits) {
+        	case 10:
+        	case  8:
+        		myF = Gfx.FONT_XTINY;
+        		break;
+        	case  6:
+        		myF = Gfx.FONT_SMALL;
+        		break;
+        	case  4:
+        		myF = Gfx.FONT_MEDIUM;
+        		break;
+        	}
+			if (height < 70) {
+				valueView.locY -= 12;
+			} else {
+		   	   	var labelView = View.findDrawableById("label");
+				labelView.locX -= 3;
+				valueView.locX -= 3;
+				valueView.locY -= 5;
+			}
+        // Middle sector right so we'll use the generic, centered layout shrunk - 4
+        } else if (obscurityFlags == (OBSCURE_RIGHT)) {
+        	if (mDigits > 6) {myF = Gfx.FONT_XTINY;}
+        	else if (mDigits == 6) {myF = Gfx.FONT_SMALL;}
+        	else if (mDigits < 6) {myF = Gfx.FONT_MEDIUM;}
+			if (height < 70) {
+				valueView.locY -= 12;
+			} else {
+		   	   	var labelView = View.findDrawableById("label");
+				labelView.locX += 3;
+				valueView.locX += 3;
+				valueView.locY -= 5;
+			}
+
+        // Top left quadrant so we'll use the bottom left layout - 9
+        // Top right quadrant so we'll use the bottom right layout - 12
+        // Bottom left quadrant so we'll use the bottom left layout - 9
+        // Bottom right quadrant so we'll use the bottom right layout - 12
+        } else if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT) || obscurityFlags == (OBSCURE_TOP | OBSCURE_RIGHT) ||
+                   obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT) || obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_RIGHT) ) {
+        	switch (mDigits) {
+        	case 10:
+        	case  8:
+        		myF = Gfx.FONT_XTINY;
+        		break;
+        	case  6:
+        		myF = Gfx.FONT_TINY;
+				valueView.locY -= 8;
+        		break;
+        	case  4:
+        		myF = Gfx.FONT_MEDIUM;
+				valueView.locY -= 12;
+        		break;
+        	}
+        // Bottom sector so we'll use the generic, centered layout upside down - 13
+        } else if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			if (height < 70) {
+				if (mDigits == 10) {myF = Gfx.FONT_TINY;}
+				else if (mDigits == 8) {myF = Gfx.FONT_SMALL;}
+				else if (mDigits == 6) {myF = Gfx.FONT_MEDIUM;}
+				valueView.locY -= 11;
+			} else if (height < 100) {
+				if (mDigits == 10) {myF = Gfx.FONT_SMALL;}
+				else if (mDigits == 8) {myF = Gfx.FONT_MEDIUM;}
+				if (height < 88) {
+					valueView.locY -= 6;
+				} else {
+					valueView.locY += 3;
+				}
+			}
+		}
+
+		if (myF != null) {
+			valueView.setFont(myF);
+		}
+	}
+
+	(:fenix6xpro)
+	function doLayout(dc, yAdjust) {
+        var obscurityFlags = DataField.getObscurityFlags();
+       	var width = dc.getWidth();
+        var height = dc.getHeight();
+   	   	var valueView = View.findDrawableById("value");
+       	var myF = null;
+
+        // Top left quadrant so we'll use the top left layout - 3
+        // Top right quadrant so we'll use the top right layout - 6
+
+        // Top sector so we'll use the generic, centered layout shifted - 7
+        if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			if (height < 50) {
+				myF = Gfx.FONT_TINY; valueView.locY -= 15;
+			} else if (height < 75) {
+				myF = (mDigits > 6) ? Gfx.FONT_SMALL : Gfx.FONT_MEDIUM; valueView.locY -= 5;
+			} else if (height < 110) {
+				myF = (mDigits > 6) ? Gfx.FONT_MEDIUM : Gfx.FONT_LARGE; valueView.locY += 12;
+			} else {
+				myF = Gfx.FONT_LARGE; valueView.locY += 35;
+			}
+
+        // Middle sector so we'll use the generic, centered layout shrunk - 5
+        } else if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT)) {
+//			myF = Gfx.FONT_LARGE;
+			if (height < 65) {
+				valueView.locY += 10;
+			} else if (height < 75) {
+				valueView.locY += 15;
+			} else if (height < 93) {
+				valueView.locY += 20;
+			} else {
+				valueView.locY += 30;
+			}
+
+        // Middle sector left so we'll use the generic, centered layout shrunk - 1
+        } else if (obscurityFlags == (OBSCURE_LEFT)) {
+			if (height < 65) {
+				valueView.locX += 8;
+				valueView.locY += 10;
+			} else if (height < 75) {
+    	    	if (mDigits < 8) {myF = Gfx.FONT_TINY;valueView.locY -= 10;}
+				valueView.locY += 15;
+			} else {
+        		if (mDigits < 8) {myF = Gfx.FONT_SMALL;}
+				valueView.locY += 15;
+			}
+        // Middle sector right so we'll use the generic, centered layout shrunk - 4
+        } else if (obscurityFlags == (OBSCURE_RIGHT)) {
+			if (height < 65) {
+				valueView.locX -= 8;
+				valueView.locY += 10;
+			} else if (height < 75) {
+    	    	if (mDigits < 8) {myF = Gfx.FONT_TINY;valueView.locY -= 10;}
+				valueView.locY += 15;
+			} else {
+	        	if (mDigits < 8) {myF = Gfx.FONT_SMALL;}
+				valueView.locY += 15;
+			}
+
+        // Bottom sector so we'll use the generic, centered layout upside down - 13
+        } else if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			if (height < 60) {
+				myF = Gfx.FONT_XTINY; valueView.locY += 4;
+			} else if (height < 75) {
+				myF = (mDigits > 6) ? Gfx.FONT_TINY : Gfx.FONT_SMALL; valueView.locY -= 1;
+			} else if (height < 97) {
+				if (mDigits < 8) {
+					myF = Gfx.FONT_LARGE;
+				} else if (mDigits == 8) {
+					myF = Gfx.FONT_MEDIUM;
+				} else {
+					myF = Gfx.FONT_SMALL;
+				}
+				valueView.locY += 5;
+			} else if (height < 110) {
+				if (mDigits < 8) {
+					myF = Gfx.FONT_LARGE;
+				} else if (mDigits == 8) {
+					myF = Gfx.FONT_MEDIUM;
+				} else {
+					myF = Gfx.FONT_SMALL;
+				}
+				valueView.locY += 10;
+			} else {
+				myF = Gfx.FONT_LARGE; valueView.locY += 20;
+			}
+        } else if 	(obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT) ||
+        			 obscurityFlags == (OBSCURE_TOP | OBSCURE_RIGHT) ||
+        			 obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT) ||
+        			 obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_RIGHT)) {
+			if (mDigits < 8) {
+				myF = Gfx.FONT_TINY;
+				if (mDigits == 6 && (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT) ||
+				        			 obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT))) {
+					valueView.locX -= 4;
+				} else if (mDigits == 4) {
+					valueView.locX += 8;
+				}
+				valueView.locY -= 15;
+			}
+		}
+
+		if (myF != null) {
+			valueView.setFont(myF);
+		}
+        // Bottom left quadrant so we'll use the bottom left layout - 9
+        // Bottom right quadrant so we'll use the bottom right layout - 12
+        // Use the generic, centered layout
+	}
 
     // Set your layout here. Anytime the size of obscurity of
     // the draw context is changed this will be called.
     function onLayout(dc) {
-    
+    	mLaidOut = false;
+        return true;
+    }
+
+    function myLayout(dc) {
         var obscurityFlags = DataField.getObscurityFlags();
+        var adj = -1;
 
         // Top left quadrant so we'll use the top left layout - 3
         if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT)) {
             View.setLayout(Rez.Layouts.TopLeftLayout(dc));
+            adj = getYAdjust(dc, obscurityFlags);
 
         // Top right quadrant so we'll use the top right layout - 6
         } else if (obscurityFlags == (OBSCURE_TOP | OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.TopRightLayout(dc));
+            adj = getYAdjust(dc, obscurityFlags);
 
         // Top sector so we'll use the generic, centered layout shifted - 7
         } else if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.TopCentreLayout(dc));
+            adj = getYAdjust(dc, obscurityFlags);
 
         // Middle sector so we'll use the generic, centered layout shrunk - 5
         } else if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.MiddleCentreLayout(dc));
+            adj = getYAdjust(dc, obscurityFlags);
 
         // Middle sector left so we'll use the generic, centered layout shrunk - 1
         } else if (obscurityFlags == (OBSCURE_LEFT)) {
             View.setLayout(Rez.Layouts.MiddleLeftLayout(dc));
+            adj = getYAdjust(dc, obscurityFlags);
 
-        // Middle sector so we'll use the generic, centered layout shrunk - 4
+        // Middle sector right so we'll use the generic, centered layout shrunk - 4
         } else if (obscurityFlags == (OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.MiddleRightLayout(dc));
+            adj = getYAdjust(dc, obscurityFlags);
 
         // Bottom sector so we'll use the generic, centered layout upside down - 13
         } else if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.BottomCentreLayout(dc));
-            var labelView = View.findDrawableById("label");
-	        var height = dc.getHeight();
-            labelView.locY = height - 32;
+            adj = getYAdjust(dc, obscurityFlags);
 
         // Bottom left quadrant so we'll use the bottom left layout - 9
         } else if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT)) {
             View.setLayout(Rez.Layouts.BottomLeftLayout(dc));
+            adj = getYAdjust(dc, obscurityFlags);
 
         // Bottom right quadrant so we'll use the bottom right layout - 12
         } else if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.BottomRightLayout(dc));
+            adj = getYAdjust(dc, obscurityFlags);
 
         // Use the generic, centered layout
         } else {
             View.setLayout(Rez.Layouts.MainLayout(dc));
+            adj = getYAdjust(dc, obscurityFlags);
         }
+
+		doLayout(dc, adj);
 
         View.findDrawableById("label").setText(Rez.Strings.label);
 
@@ -102,10 +1203,14 @@ class GridRefDataFieldView extends WatchUi.DataField {
     // Display the value you computed here. This will be called
     // once a second when the data field is visible.
     function onUpdate(dc) {
+		if (!mLaidOut) {
+			mLaidOut = myLayout(dc);
+		}
+		
         // Set the background color
         View.findDrawableById("Background").setColor(getBackgroundColor());
 
-        var labelView = View.findDrawableById("label");
+//        var labelView = View.findDrawableById("label");
 
         // Set the foreground color and value
         var valueView = View.findDrawableById("value");
@@ -115,24 +1220,7 @@ class GridRefDataFieldView extends WatchUi.DataField {
             valueView.setColor(Graphics.COLOR_BLACK);
         }
 
-        var obscurityFlags = DataField.getObscurityFlags();
-        // Main layout
-        if (obscurityFlags == 0 || obscurityFlags == 15) {
-	        var height = dc.getHeight();
-            var width = dc.getWidth();
-        	var f = 4;
-        	var w = 0;
-        	while (f > 0) {
-	        	w = dc.getTextWidthInPixels(mString, f);
-        		if (w <= width) {
-	        		break;
-        		}
-        		f = f-1;
-        	}
-	        valueView.setFont(f);
-	        valueView.locY = height / 2 - 8;
-        }
-        
+//mString = "SJ 541 772";
         valueView.setText(mString);
 
         // Call parent's onUpdate(dc) to redraw the layout
