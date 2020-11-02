@@ -1,42 +1,112 @@
 using Toybox.WatchUi as Ui;
-//using Toybox.System as Sys;
 using Toybox.Position;
 using Toybox.Application as App;
 using Toybox.Application.Properties as Props;
+using Toybox.Graphics;
+using Toybox.System as Sys;
 using GridRefClasses as GridRef;
 
 class GridRefWidgetView extends Ui.View {
+
+const cDigits = 6;
+const cGrid = 0; // OS GB grid by default
+const cBestGuess = true;
+const cSize = 0;
+
+const OutSide = "Outside Grid";
+const NoData = "No GPS Data";
+
 	hidden var mLocation;
-	hidden var mDigits;
+	hidden var mDigits = cDigits;
+	hidden var mGrid = cGrid;
+    hidden var mBestGuess = cBestGuess;
+	hidden var mSize = cSize;
 	hidden var mAccuracy = 0;
 	hidden var updatingGPS = false;
+	hidden var lpLocY, vlLocY;
 
 	function initialize() {
 		View.initialize();
+		var temp;
 
 		mAccuracy = 0;
 		updatingGPS = false;
 
         if ( App has :Properties ) {
 	        mDigits = Props.getValue("Digits");
+	        mGrid = Props.getValue("DefaultGrid");
+	        temp = Props.getValue("BestGuess");
+	        mSize = Props.getValue("FontSize");
 	    } else {
 	        mDigits = App.getApp().getProperty("Digits");
+	        mGrid = App.getApp().getProperty("DefaultGrid");
+	        temp = App.getApp().getProperty("BestGuess");
+	        mSize = App.getApp().getProperty("FontSize");
 	    }
+	    if (mDigits == null) {mDigits = cDigits;}
+	    if (mGrid == null) {mGrid = cGrid;}
+	    if (mGrid == null) {mGrid = cGrid;}
+	    if (temp == null) {
+	    	mBestGuess = cBestGuess;
+	    } else {
+	    	mBestGuess = (temp == 0);
+	    }
+	    if (mSize == null) {mSize = cSize;}
+
 	}
 
     // Load your resources here
 	function onLayout(dc) {
 		updatingGPS = false;
-		View.setLayout(Rez.Layouts.MainLayout(dc));
-		var titleView = View.findDrawableById("title");
-		titleView.setText("Grid Reference");
-		var valueView = View.findDrawableById("value");
-		valueView.setText("No GPS Data");
+		var screenShape = Sys.getDeviceSettings().screenShape;
+		if (mSize == 0) { // one line
+			View.setLayout(Rez.Layouts.MainLayout(dc));
+		} else if (mSize == 1) { // two line
+			if (mDigits == 4) {
+				View.setLayout(Rez.Layouts.MainLayout4(dc));
+			} else if (mDigits == 6) {
+				View.setLayout(Rez.Layouts.MainLayout6(dc));
+			} else if (mDigits == 8) {
+				View.setLayout(Rez.Layouts.MainLayout8(dc));
+			} else { //mDigits == 10
+				View.setLayout(Rez.Layouts.MainLayout10(dc));
+			}
+		} else { // mSize == 2 - three line
+			if (screenShape == Sys.SCREEN_SHAPE_RECTANGLE || mDigits < 10 ) {
+				View.setLayout(Rez.Layouts.MainLayoutL(dc));
+			} else { //mDigits == 10
+				View.setLayout(Rez.Layouts.MainLayout10L(dc));
+				if (View.findDrawableById("title") == null) {
+					View.setLayout(Rez.Layouts.MainLayoutL(dc));
+				}
+			}
+		}
+		var tmpView = View.findDrawableById("title");
+		tmpView.setText("Grid Reference");
+		var vleView = View.findDrawableById("valueE");
+		if (mSize != 0) { // not one line
+			vleView.setText("");
+			var vlnView = View.findDrawableById("valueN");
+			vlnView.setText("");
+			vlLocY = vleView.locY;
+			tmpView = View.findDrawableById("letters");
+			if (screenShape == Sys.SCREEN_SHAPE_RECTANGLE) {
+				if (mSize == 2) { // three line
+					vlLocY -= 20; // move the whole thing up a bit
+					vleView.locY = vlLocY;
+					vlnView.locY += vlLocY;
+				}
+				lpLocY = vlLocY - tmpView.locY;
+			} else { // not rectangle
+				lpLocY = tmpView.locY;
+			}
+		}
+		vleView.setText(NoData);
 		var labelView = View.findDrawableById("label");
 		labelView.setText(Rez.Strings.label);
-		var accView = View.findDrawableById("accuracy");
-		accView.locX = labelView.locX + 4;
-		accView.setText(Rez.Strings.accuracy);
+		tmpView = View.findDrawableById("accuracy");
+		tmpView.locX = labelView.locX + 4;
+		tmpView.setText(Rez.Strings.accuracy);
 	}
 
     /* ======================== Position handling ========================== */
@@ -78,8 +148,28 @@ class GridRefWidgetView extends Ui.View {
     function doCompute() {
 //    	mLocation = Position.parse("53.825564, -2.421976", Position.GEO_DEG);
 //    	mLocation = Position.parse("253.825564, -24.421976", Position.GEO_DEG);
-
-		return (mLocation != null && mAccuracy > 1) ? GridRef.OSGridString(mLocation.toRadians(), mDigits) : "No GPS Data";
+//    	mLocation = Position.parse("53.32, -6.66", Position.GEO_DEG);
+		if ((mLocation == null || mAccuracy <= 1)) {return [NoData, "", ""];}
+		var useGrid = mGrid;
+		var rads = mLocation.toRadians();
+//rads = Position.parse("54.479613, -5.6991577", Position.GEO_DEG).toRadians();
+//   0.968 is 55.462315 degrees North, (Tor Rocks north of Inishtrahull) further North is treated as GB
+//  -0.093 is 5.328507 degrees West (East of Cannon Rock), further East is treated as GB
+//   0.896 is 51.337021 degrees North, (Fastnet Rock) further South is treated as GB
+//   0.963, -0.102 55.175835, -5.844170 SW of Mull of Kintyre
+//   0.908, -0.102, > 52.024567, -5.844170 NW of St David's Head
+// By default, unless otherwise set, try Ireland first unless too far east or north. In the overlap the chosen default grid will be used.
+			if (mBestGuess) {
+				if (rads[1] > -0.093 || rads[0] > 0.968 || rads[0] < 0.896) { useGrid = 0; } else
+				if (rads[1] > -0.102 && (rads[0] > 0.963 || rads[0] < 0.908)) { useGrid = 0; }
+				else { useGrid = 1; }
+			}
+		var gr = GridRef.OSGridArray(useGrid, rads, mDigits);
+		if (gr[0].equals(OutSide)) {
+// Try the other grid if outside the 1st one (shouldn't happen with BestGuess)
+			gr = GridRef.OSGridArray(((useGrid + 1) % 2), rads, mDigits);
+		}
+		return gr;
     }
 
     // Update the view
@@ -87,13 +177,30 @@ class GridRefWidgetView extends Ui.View {
 	    var GPS = ["None", "Last", "Poor", "Usable", "Good"];
 	    var acc;
 
-//    	mAccuracy = 3;
-
 		if (updatingGPS == false) {
 			acc = "Fixed";
 		} else {
 			acc = GPS[mAccuracy];
-			View.findDrawableById("value").setText(doCompute());
+			var gr = doCompute();
+			if (mSize == 0) {
+				if (gr[0].equals(NoData) || gr[0].equals(OutSide)) {
+					View.findDrawableById("valueE").setText(gr[0]);
+				} else {
+					View.findDrawableById("valueE").setText(gr[0] + " " + gr[1] + " " + gr[2]);
+				}
+			} else {
+				var txt = View.findDrawableById("letters");
+				if (gr[0].equals(NoData) || gr[0].equals(OutSide)) {
+					txt.locY = vlLocY;
+				} else {
+					txt.locY = lpLocY;
+				}
+				txt.setText(gr[0]);
+//gr[1] = "289"; gr[2] = "377";
+				View.findDrawableById("valueE").setText(gr[1]);
+				View.findDrawableById("valueN").setText(gr[2]);
+			}
+			
        	}
    		View.findDrawableById("accuracy").setText(acc);
         // Call the parent onUpdate function to redraw the layout
