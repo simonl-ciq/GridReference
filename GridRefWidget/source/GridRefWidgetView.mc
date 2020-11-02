@@ -196,7 +196,7 @@ const NoData = "No GPS Data";
 					txt.locY = lpLocY;
 				}
 				txt.setText(gr[0]);
-//gr[1] = "289"; gr[2] = "377";
+//gr[1] = "289"; gr[2] = "378";
 				View.findDrawableById("valueE").setText(gr[1]);
 				View.findDrawableById("valueN").setText(gr[2]);
 			}
