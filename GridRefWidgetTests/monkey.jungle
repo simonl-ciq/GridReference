@@ -1,0 +1,7 @@
+project.manifest = manifest.xml
+#
+base.sourcePath=source;..\GridRefWidget\source
+#
+base.resourcePath=..\GridRefWidget\resources;..\GridRefWidget\resources-eng
+base.resourcePath=$(base.resourcePath);..\GridRefWidget\resources-round-240x240;..\GridRefWidget\resources-round-218x218
+base.resourcePath=$(base.resourcePath);..\GridRefWidget\resources-vivoactive_hr;..\GridRefWidget\resources-vivoactive3

@@ -1,0 +1,49 @@
+<layouts>
+    <!-- A generic, centered layout. -->
+    <layout id="MainLayout">
+        <label id="title" x="center" y="10" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_TINY" />
+        <label id="valueE" x="center" y="center" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_LARGE" />
+        <label id="label" x="center" y="bottom" color="Gfx.COLOR_LT_GRAY" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_TINY" />
+		<label id="accuracy" x="center" y="bottom" color="Gfx.COLOR_LT_GRAY" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_TINY" ></label>
+    </layout>
+    <layout id="MainLayout4">
+        <label id="title" x="center" y="10" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_TINY" />
+        <label id="letters" x="center" y="44" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_LARGE" />
+        <label id="valueE" x="220" y="center" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_NUMBER_THAI_HOT" />
+        <label id="valueN" x="260" y="center" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_NUMBER_THAI_HOT" />
+        <label id="label" x="center" y="bottom" color="Gfx.COLOR_LT_GRAY" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_TINY" />
+		<label id="accuracy" x="center" y="bottom" color="Gfx.COLOR_LT_GRAY" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_TINY" ></label>
+    </layout>
+    <layout id="MainLayout6">
+        <label id="title" x="center" y="10" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_TINY" />
+        <label id="letters" x="center" y="60" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_LARGE" />
+        <label id="valueE" x="222" y="center" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_NUMBER_THAI_HOT" />
+        <label id="valueN" x="258" y="center" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_NUMBER_THAI_HOT" />
+        <label id="label" x="center" y="bottom" color="Gfx.COLOR_LT_GRAY" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_TINY" />
+		<label id="accuracy" x="center" y="bottom" color="Gfx.COLOR_LT_GRAY" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_TINY" />
+    </layout>
+    <layout id="MainLayout8">
+        <label id="title" x="center" y="10" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_TINY" />
+        <label id="letters" x="center" y="60" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_LARGE" />
+        <label id="valueE" x="226" y="center" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_NUMBER_THAI_HOT" />
+        <label id="valueN" x="254" y="center" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_NUMBER_THAI_HOT" />
+        <label id="label" x="center" y="bottom" color="Gfx.COLOR_LT_GRAY" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_TINY" />
+		<label id="accuracy" x="center" y="bottom" color="Gfx.COLOR_LT_GRAY" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_TINY" />
+    </layout>
+    <layout id="MainLayout10">
+        <label id="title" x="center" y="10" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_TINY" />
+        <label id="letters" x="center" y="58" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_LARGE" />
+        <label id="valueE" x="228" y="center" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_NUMBER_HOT" />
+        <label id="valueN" x="252" y="center" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_NUMBER_HOT" />
+        <label id="label" x="center" y="bottom" color="Gfx.COLOR_LT_GRAY" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_TINY" />
+		<label id="accuracy" x="center" y="bottom" color="Gfx.COLOR_LT_GRAY" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_TINY" />
+    </layout>
+    <layout id="MainLayoutL">
+        <label id="title" x="center" y="10" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_TINY" />
+        <label id="letters" x="center" y="52" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_LARGE" />
+        <label id="valueE" x="center" y="center" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_NUMBER_THAI_HOT" />
+        <label id="valueN" x="center" y="90" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_NUMBER_THAI_HOT" />
+        <label id="label" x="center" y="bottom" color="Gfx.COLOR_LT_GRAY" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_TINY" />
+		<label id="accuracy" x="center" y="bottom" color="Gfx.COLOR_LT_GRAY" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_TINY" />
+    </layout>
+</layouts>

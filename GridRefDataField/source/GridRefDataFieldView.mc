@@ -6,10 +6,19 @@ using GridRefClasses as GridRef;
 
 using Toybox.System as Sys;
 
+const cDigits = 6;
+const cGrid = 0; // OS GB grid by default
+const cBestGuess = true;
+
+const OutSide = "Outside Grid";
+const NoData = "No GPS Data";
+
 class GridRefDataFieldView extends WatchUi.DataField {
 	hidden var mLaidOut = false;
 
-    hidden var mDigits;
+    hidden var mDigits = cDigits;
+    hidden var mGrid = cGrid;
+    hidden var mBestGuess = cBestGuess;
     hidden var mString = "";
     
     
@@ -17,16 +26,27 @@ class GridRefDataFieldView extends WatchUi.DataField {
     hidden var mValue = "AB 1234 5678";
     hidden var mTestString = "AB 1234 5678";
     hidden var mLabel = "Grid Ref";
-    hidden var NoGPSData = "No GPS signal";
 
     // Set the label of the data field here.
     function initialize() {
         DataField.initialize();
+        var temp;
 
 		if ( App has :Properties ) {
 	        mDigits = Props.getValue("Digits");
+	        mGrid = Props.getValue("DefaultGrid");
+	        temp = Props.getValue("BestGuess");
 	    } else {
 	        mDigits = App.getApp().getProperty("Digits");
+	        mGrid = App.getApp().getProperty("DefaultGrid");
+	        temp = App.getApp().getProperty("BestGuess");
+	    }
+	    if (mDigits == null) {mDigits = cDigits;}
+	    if (mGrid == null) {mGrid = cGrid;}
+	    if (temp == null) {
+	    	mBestGuess = cBestGuess;
+	    } else {
+	    	mBestGuess = (temp == 0);
 	    }
 	    if (mDigits == 4) {
 	    	mTestString = "AB 12 34";
@@ -68,21 +88,6 @@ class GridRefDataFieldView extends WatchUi.DataField {
 		} else
 		if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT)) {
 				if (dc.getHeight() < 100) {adj = 1;}
-		}
-	    return adj;
-    }
-
-	(:marvel)
-    function getYAdjust(dc, obscurityFlags) {
-    	var adj = -1;
-		if (obscurityFlags == OBSCURE_LEFT || obscurityFlags == OBSCURE_RIGHT) {
-			adj = 9;
-		} else 
-		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
-				adj = 1;
-		} else 
-		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
-				adj = (dc.getHeight() > 80) ? 18 : 12;
 		}
 	    return adj;
     }
@@ -174,7 +179,7 @@ class GridRefDataFieldView extends WatchUi.DataField {
 	    return adj;
     }
 
-	(:venu)
+	(:venuair)
     function getYAdjust(dc, obscurityFlags) {
     	var adj = -1;
 		if (obscurityFlags == OBSCURE_LEFT || obscurityFlags == OBSCURE_RIGHT) {
@@ -219,21 +224,6 @@ class GridRefDataFieldView extends WatchUi.DataField {
 		}
 	    return adj;
     }
-    
-	(:avenger)
-    function getYAdjust(dc, obscurityFlags) {
-    	var adj = -1;
-		if (obscurityFlags == OBSCURE_LEFT || obscurityFlags == OBSCURE_RIGHT) {
-			adj = 4;
-		} else
-		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
-				adj = 3;
-		} else 
-		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
-				adj = 15;
-		}
-	    return adj;
-    }
 
 	(:fenix6)
     function getYAdjust(dc, obscurityFlags) {
@@ -270,7 +260,7 @@ class GridRefDataFieldView extends WatchUi.DataField {
 	    return 0;
     }
 
-	(:e130)
+	(:e130_venusq)
     function getYAdjust(dc, obscurityFlags) {
 	    return 10;
     }
@@ -298,38 +288,6 @@ class GridRefDataFieldView extends WatchUi.DataField {
 		var obs = DataField.getObscurityFlags();
 		myF = Gfx.FONT_LARGE;
    		if (ySpace < 77) {
-			if (mDigits > 6) {
-				myF = 8 - (mDigits / 2);
-				if (obs == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
-					myF--;
-				}
-			}
-		}
-		valueView.setFont(myF);
-		return myF;
-    }
-
-	(:marvel)
-    function doFont(valueView, ySpace, myF) {
-		var obs = DataField.getObscurityFlags();
-		if (obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
-			switch (mDigits) {
-			case 4:
-				myF = Gfx.FONT_LARGE;
-				break;
-			case 6:
-				myF = Gfx.FONT_SMALL;
-				break;
-			case 8:
-				myF = Gfx.FONT_TINY;
-				break;
-			case 10:
-				myF = Gfx.FONT_XTINY;
-				break;
-			}
-		} else 
-   		if (ySpace < 77) {
-			myF = Gfx.FONT_LARGE;
 			if (mDigits > 6) {
 				myF = 8 - (mDigits / 2);
 				if (obs == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
@@ -505,7 +463,7 @@ class GridRefDataFieldView extends WatchUi.DataField {
 		return myF;
     }
 
-	(:venu)
+	(:venuair)
     function doFont(valueView, ySpace, myF) {
 		var obs = DataField.getObscurityFlags();
 		if (obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
@@ -584,42 +542,6 @@ class GridRefDataFieldView extends WatchUi.DataField {
 		valueView.setFont(myF);
 		return myF;
     }
-
-	(:avenger)
-    function doFont(valueView, ySpace, myF) {
-		var obs = DataField.getObscurityFlags();
-		if (obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
-		switch (mDigits) {
-			case 4:
-				myF = Gfx.FONT_MEDIUM;
-				break;
-			case 6:
-				myF = Gfx.FONT_SMALL;
-				break;
-			case 8:
-				myF = Gfx.FONT_TINY;
-				break;
-			case 10:
-				myF = Gfx.FONT_XTINY;
-				break;
-			}
-		} else if ((obs == OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT) ||
-		          (obs == OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
-		switch (mDigits) {
-			case 8:
-				if (ySpace < 75) {myF = Gfx.FONT_MEDIUM;}
-				break;
-			case 10:
-				if (ySpace < 75) {myF = Gfx.FONT_SMALL;} else {myF = Gfx.FONT_MEDIUM;}
-				break;
-			default:
-				break;
-			}
-		}
-		valueView.setFont(myF);
-		return myF;
-    }
-
 
 // ----------------------------------------------
 
@@ -1020,7 +942,6 @@ class GridRefDataFieldView extends WatchUi.DataField {
 
         // Middle sector so we'll use the generic, centered layout shrunk - 5
         } else if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT)) {
-//			myF = Gfx.FONT_LARGE;
 			if (height < 65) {
 				valueView.locY += 10;
 			} else if (height < 75) {
@@ -1116,59 +1037,49 @@ class GridRefDataFieldView extends WatchUi.DataField {
 
     function myLayout(dc) {
         var obscurityFlags = DataField.getObscurityFlags();
-        var adj = -1;
 
         // Top left quadrant so we'll use the top left layout - 3
         if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT)) {
             View.setLayout(Rez.Layouts.TopLeftLayout(dc));
-            adj = getYAdjust(dc, obscurityFlags);
 
         // Top right quadrant so we'll use the top right layout - 6
         } else if (obscurityFlags == (OBSCURE_TOP | OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.TopRightLayout(dc));
-            adj = getYAdjust(dc, obscurityFlags);
 
         // Top sector so we'll use the generic, centered layout shifted - 7
         } else if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.TopCentreLayout(dc));
-            adj = getYAdjust(dc, obscurityFlags);
 
         // Middle sector so we'll use the generic, centered layout shrunk - 5
         } else if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.MiddleCentreLayout(dc));
-            adj = getYAdjust(dc, obscurityFlags);
 
         // Middle sector left so we'll use the generic, centered layout shrunk - 1
         } else if (obscurityFlags == (OBSCURE_LEFT)) {
             View.setLayout(Rez.Layouts.MiddleLeftLayout(dc));
-            adj = getYAdjust(dc, obscurityFlags);
 
         // Middle sector right so we'll use the generic, centered layout shrunk - 4
         } else if (obscurityFlags == (OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.MiddleRightLayout(dc));
-            adj = getYAdjust(dc, obscurityFlags);
 
         // Bottom sector so we'll use the generic, centered layout upside down - 13
         } else if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.BottomCentreLayout(dc));
-            adj = getYAdjust(dc, obscurityFlags);
 
         // Bottom left quadrant so we'll use the bottom left layout - 9
         } else if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT)) {
             View.setLayout(Rez.Layouts.BottomLeftLayout(dc));
-            adj = getYAdjust(dc, obscurityFlags);
 
         // Bottom right quadrant so we'll use the bottom right layout - 12
         } else if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.BottomRightLayout(dc));
-            adj = getYAdjust(dc, obscurityFlags);
 
         // Use the generic, centered layout
         } else {
             View.setLayout(Rez.Layouts.MainLayout(dc));
-            adj = getYAdjust(dc, obscurityFlags);
         }
 
+        var adj = getYAdjust(dc, obscurityFlags);
 		doLayout(dc, adj);
 
         View.findDrawableById("label").setText(Rez.Strings.label);
@@ -1184,20 +1095,37 @@ class GridRefDataFieldView extends WatchUi.DataField {
 		var Accuracy = 2;
 //		    Accuracy = 1; // for testing / debugging
 		
-		mString = "No GPS Data";
+		mString = NoData;
 
 	    if (info has :currentLocationAccuracy && info.currentLocationAccuracy != null) {
 	    	Accuracy = info.currentLocationAccuracy;
 	    }
 		if (info has :currentLocation && info.currentLocation != null && Accuracy > 1) {
-    		mString = GridRef.OSGridString(info.currentLocation.toRadians(), mDigits);
+			var useGrid = mGrid;
+			var rads = info.currentLocation.toRadians();
+//rads = Position.parse("52.479613, -10.944677", Position.GEO_DEG).toRadians();
+//   0.968 is 55.462315 degrees North, (Tor Rocks north of Inishtrahull) further North is treated as GB
+//  -0.093 is 5.328507 degrees West (East of Cannon Rock), further East is treated as GB
+//   0.896 is 51.337021 degrees North, (Fastnet Rock) further South is treated as GB
+//   0.963, -0.102 55.175835, -5.844170 SW of Mull of Kintyre
+//   0.908, -0.102, > 52.024567, -5.844170 NW of St David's Head
+// By default, unless otherwise set, try Ireland first unless too far east or north. In the overlap the chosen default grid will be used.
+			if (mBestGuess) {
+				if (rads[1] > -0.093 || rads[0] > 0.968 || rads[0] < 0.896) { useGrid = 0; } else
+				if (rads[1] > -0.102 && (rads[0] > 0.963 || rads[0] < 0.908)) { useGrid = 0; }
+				else { useGrid = 1; }
+			}
+
+			var gr = GridRef.OSGridArray(useGrid, rads, mDigits);
+			if (gr[0].equals(OutSide)) {
+// Try the other grid
+				gr = GridRef.OSGridArray(((useGrid + 1) % 2), rads, mDigits);
+			}
+    		mString = gr[0];
+			if (!gr[0].equals(OutSide)) {
+		    	mString += (" " + gr[1] + " " + gr[2]);
+	    	}
 	    }
-//   for testing / debugging
-/*
-	      else {
-    		mString = GridRef.OSGridString([0.939433, -0.042271], 8);
-	  	}
-*/
     }
 
     // Display the value you computed here. This will be called

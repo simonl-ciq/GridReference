@@ -20,6 +20,7 @@ using Toybox.Math;
 LatLon.ellipsoid = {
     WGS84:         { a: 6378137,     b: 6356752.314245, f: 1/298.257223563 },
     Airy1830:      { a: 6377563.396, b: 6356256.909,    f: 1/299.3249646   },
+    AiryModified:  { a: 6377340.189, b: 6356034.448,    f: 1/299.3249646   },
 };
 /**
  * Datums; with associated ellipsoid, and Helmert transform parameters to convert from WGS 84 into
@@ -29,9 +30,10 @@ LatLon.ellipsoid = {
  * accurate to better than ±1 metre. No transformation should be assumed to be accurate to better
  * than a metre; for many datums somewhat less.
 LatLon.datum = {
-    // transforms: t in metres, s in ppm, r in arcseconds                    tx       ty        tz       s        rx       ry       rz
-    OSGB36:     { ellipsoid: LatLon.ellipsoid.Airy1830,      transform: [ -446.448, 125.157, -542.060,  20.4894, -0.1502, -0.2470, -0.8421 ] },
-    WGS84:      { ellipsoid: LatLon.ellipsoid.WGS84,         transform: [    0.0,     0.0,      0.0,     0.0,     0.0,     0.0,     0.0    ] },
+    // transforms: t in metres, s in ppm, r in arcseconds                 tx       ty        tz       s        rx       ry       rz
+    Irl1975:    { ellipsoid: ellipsoids.AiryModified,   transform: [ -482.530, 130.596, -564.557,  -8.150,   1.042,    0.214,    0.631    ] }, // epsg.io/1954
+    OSGB36:     { ellipsoid: LatLon.ellipsoid.Airy1830, transform: [ -446.448, 125.157, -542.060,  20.4894, -0.1502, -0.2470, -0.8421 ] },
+    WGS84:      { ellipsoid: LatLon.ellipsoid.WGS84,    transform: [    0.0,     0.0,      0.0,     0.0,     0.0,     0.0,     0.0    ] },
 };
 */
 
@@ -59,6 +61,15 @@ class OSLocation {
 module GridRefClasses {
 
 class Vector3d {
+
+const Airy1830 =  { :a => 6377563.396, :b => 6356256.909, :f => 1.0d / 299.3249646d };
+const AiryModified =  { :a => 6377340.189, :b => 6356034.448, :f => 1.0d / 299.3249646d };
+const ellipsoids = [ Airy1830, AiryModified ];
+
+const OSGB36 =	{ :tx => -446.448, :ty => 125.157, :tz => -542.060, :s1 => 20.4894, :rx =>-0.1502, :ry =>-0.2470, :rz =>-0.8421 };
+const Irl1975 = 	{ :tx => -482.530, :ty => 130.596, :tz => -564.557, :s1 => -8.150,  :rx => 1.042,  :ry => 0.214,  :rz => 0.631 };
+const transforms = [ OSGB36, Irl1975 ];
+
 	protected var x;
 	protected var y;
 	protected var z;
@@ -77,18 +88,18 @@ class Vector3d {
  * @returns {Vector3} Transformed point.
  */
 //* transform 't' fixed to OSGB36
-	 function applyTransform ()   {
+	 function applyTransform (grid)   {
     	// this point
     	var x1 = self.x, y1 = self.y, z1 = self.z;
     	
     // transform parameters
-	    var tx = -446.448;                    // x-shift
-	    var ty = 125.157;                    // y-shift
-	    var tz = -542.060;                    // z-shift
-	    var s1 = 20.4894/1e6 + 1;            // scale: normalise parts-per-million to (s+1)
-	    var rx = Math.toRadians(-0.1502/3600); // x-rotation: normalise arcseconds to radians
-	    var ry = Math.toRadians(-0.2470/3600); // y-rotation: normalise arcseconds to radians
-	    var rz = Math.toRadians(-0.8421/3600); // z-rotation: normalise arcseconds to radians
+	    var tx = transforms[grid][:tx];                    // x-shift
+	    var ty = transforms[grid][:ty];                    // y-shift
+	    var tz = transforms[grid][:tz];                    // z-shift
+	    var s1 = transforms[grid][:s1]/1e6 + 1;            // scale: normalise parts-per-million to (s+1)
+	    var rx = Math.toRadians(transforms[grid][:rx]/3600); // x-rotation: normalise arcseconds to radians
+	    var ry = Math.toRadians(transforms[grid][:ry]/3600); // y-rotation: normalise arcseconds to radians
+	    var rz = Math.toRadians(transforms[grid][:rz]/3600); // z-rotation: normalise arcseconds to radians
 
 	    // apply transform
     	var x2 = tx + x1*s1 - y1*rz + z1*ry;
@@ -107,12 +118,13 @@ class Vector3d {
  * @param {LatLon.datum.transform} datum - Datum to use when converting point.
  */
 //:a => 6377563.396, :b => 6356256.909,    :f1 => 299324964, :f2 => 0.6,   :f3 => 1000000
-// assumes OSGB36
-	function toLatLonE() {
+	function toLatLonE(grid) {
     	var x = self.x, y = self.y, z = self.z;
-    	var a = 6377563.396d;
-    	var b = 6356256.909d;
-    	var f = 1 / 299.3249646d;
+
+    	var a = ellipsoids[grid][:a];
+    	var b = ellipsoids[grid][:b];
+    	var f = ellipsoids[grid][:f];
+
     	
 	    var e2 = 2*f - f*f;   // 1st eccentricity squared ≡ (a²-b²)/a²
 	    var ε2 = e2 / (1-e2); // 2nd eccentricity squared ≡ (a²-b²)/b²
@@ -123,7 +135,9 @@ class Vector3d {
 	    var tanβ = (b*z)/(a*p) * (1+ε2*b/R);
         var sinβ = tanβ / Math.sqrt(1+tanβ*tanβ);
     	var cosβ = sinβ / tanβ;
-   		var φ = (cosβ != cosβ) ? 0 : Math.atan2(z + ε2*b*sinβ*sinβ*sinβ, p - e2*a*cosβ*cosβ*cosβ);
+
+		// geodetic latitude (Bowring eqn.18: tanφ = z+ε²⋅b⋅sin³β / p−e²⋅cos³β)
+       	var φ = (cosβ != cosβ) ? 0 : Math.atan2(z + ε2*b*sinβ*sinβ*sinβ, p - e2*a*cosβ*cosβ*cosβ);
 
 	    // longitude
 	    var λ = Math.atan2(y, x);
@@ -140,12 +154,12 @@ class LatLon {
     	self.loc = location;
     }
 
-// only transforms from WGS84 to OSGB36
+// only transforms from WGS84 to OSGB36 & Irl1975
 // other possibilities removed
-    function convertDatum () {
+    function convertDatum (i) {
 		var cartesian = self.toCartesian();           // convert polar to cartesian...
-	  	    cartesian = cartesian.applyTransform();   // ...apply transform...
-    		return cartesian.toLatLonE();        // ...and convert cartesian to polar
+	  	    cartesian = cartesian.applyTransform(i);   // ...apply transform...
+    		return cartesian.toLatLonE(i);        // ...and convert cartesian to polar
     }
     
 /**
@@ -203,19 +217,23 @@ class OsGridRef {
  */
     const cDigits = 6;
  
-	function toString (digits) {
+	function toArray (grid, digits) {
 	    var e = self.easting;
 	    var n = self.northing;
-	    
-	    digits = (digits == null) ? 6 : digits.toNumber();
+
+	    if (grid == 0) {
+	    	if (e<0 || e>=700E3 || n<0 || n>=1300E3) {return ["Outside Grid", "", ""];}
+	    } else {
+	    	if (e<0 || e>=500E3 || n<0 || n>=500E3) {return ["Outside Grid", "", ""];}
+	    }
+
+	    digits = (digits == null) ? cDigits : digits.toNumber();
 		if (digits%2!=0 || digits<4 || digits>10) {
 	    	digits = cDigits;
 	    }
 
 	    // get the 100km-grid indices
 	    var e100k = Math.floor(e/100000), n100k = Math.floor(n/100000);
-
-	    if (e100k<0 || e100k>6 || n100k<0 || n100k>12) {return "Outside Grid";}
 
 	    // translate those into numeric equivalents of the grid letters
 	    var l1 = (19-n100k) - (19-n100k)%5 + Math.floor((e100k+10)/5);
@@ -228,7 +246,9 @@ class OsGridRef {
 //		var letterPair = ((l1 + 'A'.toNumber()).toChar()).toString() + ((l2 + 'A'.toNumber()).toChar()).toString();
 		// there _must_ be a better way...
 		var A = 'A'.toNumber();
-		var letterPair = ((l1+A).toChar()).toString() + ((l2+A).toChar()).toString();
+		var letterPair;
+		if (grid == 0) {letterPair = ((l1+A).toChar()).toString();} else {letterPair = "";}
+		letterPair += ((l2+A).toChar()).toString();
 		
 	    // strip 100km-grid indices from easting & northing, and reduce precision
 	    e = Math.floor((e%100000)/Math.pow(10, 5-digits/2)).toNumber();
@@ -240,21 +260,27 @@ class OsGridRef {
 	    n = ("00000000"+n);
 		n = n.substring((n.length() - digits/2), n.length());
 
-	    return letterPair + " " + e + " " + n;
+	    return [letterPair, e, n];
 	}
+
 }
 
-	function latLonToOsGrid  (point) {
+const UKMercator = { :a => 6377563.396d, :b => 6356256.909d, :F0 => 0.9996012717, :φ0 => 0.85521133347722145d, :λ0 => -0.034906585039886591d, :N0 => -100000, :E0 => 400000 }; 
+const IRLMercator  = { :a => 6377340.189d, :b => 6356034.448d, :F0 => 1.000035, :φ0 => 0.93375114981696632365417456114141d, :λ0 => -0.13962634015954636615389526147909d, :N0 => 250000, :E0 => 200000 };
+const projections = [ UKMercator, IRLMercator ];
+
+	function latLonToOsGrid  (grid, point) {
 	    // convert to OSGB36 first
-    	var radians = point.convertDatum();
+    	var radians = point.convertDatum(grid);
 
     	var φ = radians[0];
     	var λ = radians[1];
 
-	    var a = 6377563.396, b = 6356256.909;              // Airy 1830 major & minor semi-axes
-	    var F0 = 0.9996012717;                             // NatGrid scale factor on central meridian
-	    var φ0 = Math.toRadians(49), λ0 = Math.toRadians(-2);  // NatGrid true origin is 49°N,2°W
-	    var N0 = -100000, E0 = 400000;                     // northing & easting of true origin, metres
+	    var a = projections[grid][:a], b = projections[grid][:b];         // Airy 1830  or modifiedmajor & minor semi-axes
+	    var F0 = projections[grid][:F0];                                 // NatGrid scale factor on central meridian
+	    var φ0 = projections[grid][:φ0], λ0 = projections[grid][:λ0];  	// NatGrid true origin is 49°N,2°W, OSI is 53° 30'N,8°W
+	    var N0 = projections[grid][:N0], E0 = projections[grid][:E0];     // northing & easting of true origin, metres
+
 	    var e2 = 1 - (b*b)/(a*a);                          // eccentricity squared
 	    var n = (a-b)/(a+b), n2 = n*n, n3 = n*n*n;         // n, n², n³
 
@@ -294,11 +320,19 @@ class OsGridRef {
 	    return new OsGridRef(E, N);
 	}
 
-        // Return the Grid Ref of latitude/longitude "position" as a string
-    function OSGridString(position, digits) {
-		//return (latLonToOsGrid(new LatLon(position))).toString();
+        // Return the Grid Ref of latitude/longitude "position" as an array [letterpair, easting, northing]
+    function OSGridArray(i, position, digits) {
 		var latlon = new LatLon(position);
-		var osgrid = latLonToOsGrid(latlon);
-		return osgrid.toString(digits);
+		var osgrid = latLonToOsGrid(i, latlon);
+		return osgrid.toArray(i, digits);
     }
+
+        // Return the Grid Ref of latitude/longitude "position" as a string
+/*
+    function OSGridString(i, position, digits) {
+		var gr = OSGridArray(i, position, digits);
+		return gr[0] + " " + gr[1] + " " + gr[2];
+    }
+*/
 }
+
