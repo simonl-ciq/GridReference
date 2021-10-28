@@ -22,16 +22,15 @@ const NoData = "No GPS Data";
     hidden var mBestGuess = cBestGuess;
 	hidden var mSize = cSize;
 	hidden var mAccuracy = 0;
+	hidden var mLaidOut = false;
 	hidden var updatingGPS = false;
 	hidden var lpLocY, vlLocY;
+	
+	var mScreenShape;
+	var mOptions;
 
-	function initialize() {
-		View.initialize();
+	function getSettings() {
 		var temp;
-
-		mAccuracy = 0;
-		updatingGPS = false;
-
         if ( App has :Properties ) {
 	        mDigits = Props.getValue("Digits");
 	        mGrid = Props.getValue("DefaultGrid");
@@ -45,20 +44,33 @@ const NoData = "No GPS Data";
 	    }
 	    if (mDigits == null) {mDigits = cDigits;}
 	    if (mGrid == null) {mGrid = cGrid;}
-	    if (mGrid == null) {mGrid = cGrid;}
 	    if (temp == null) {
 	    	mBestGuess = cBestGuess;
 	    } else {
 	    	mBestGuess = (temp == 0);
 	    }
 	    if (mSize == null) {mSize = cSize;}
+	    mLaidOut = false;
+	}
 
+	function initialize() {
+		View.initialize();
+		
+		var temp = Sys.getDeviceSettings();
+		mScreenShape = temp.screenShape;
+		temp = temp.monkeyVersion;
+       	mOptions = ((temp[0]*100 + temp[1]*10 + temp[2]) >= 320) ? {:acquisitionType => Position.LOCATION_CONTINUOUS,
+						 :constellations => [ Position.CONSTELLATION_GPS, Position.CONSTELLATION_GLONASS ]
+						} : Position.LOCATION_CONTINUOUS;
+
+		getSettings();
+	
+		mAccuracy = 0;
+		updatingGPS = false;
 	}
 
     // Load your resources here
-	function onLayout(dc) {
-		updatingGPS = false;
-		var screenShape = Sys.getDeviceSettings().screenShape;
+	function doLayout(dc) {
 		if (mSize == 0) { // one line
 			View.setLayout(Rez.Layouts.MainLayout(dc));
 		} else if (mSize == 1) { // two line
@@ -72,7 +84,7 @@ const NoData = "No GPS Data";
 				View.setLayout(Rez.Layouts.MainLayout10(dc));
 			}
 		} else { // mSize == 2 - three line
-			if (screenShape == Sys.SCREEN_SHAPE_RECTANGLE || mDigits < 10 ) {
+			if (mScreenShape == Sys.SCREEN_SHAPE_RECTANGLE || mDigits < 10 ) {
 				View.setLayout(Rez.Layouts.MainLayoutL(dc));
 			} else { //mDigits == 10
 				View.setLayout(Rez.Layouts.MainLayout10L(dc));
@@ -90,7 +102,7 @@ const NoData = "No GPS Data";
 			vlnView.setText("");
 			vlLocY = vleView.locY;
 			tmpView = View.findDrawableById("letters");
-			if (screenShape == Sys.SCREEN_SHAPE_RECTANGLE) {
+			if (mScreenShape == Sys.SCREEN_SHAPE_RECTANGLE) {
 				if (mSize == 2) { // three line
 					vlLocY -= 20; // move the whole thing up a bit
 					vleView.locY = vlLocY;
@@ -107,8 +119,14 @@ const NoData = "No GPS Data";
 		tmpView = View.findDrawableById("accuracy");
 		tmpView.locX = labelView.locX + 4;
 		tmpView.setText(Rez.Strings.accuracy);
+	    mLaidOut = true;
 	}
 
+	function onLayout(dc) {
+// I can't remember why I (had to?) put this line here - better leave it.	
+		updatingGPS = false;
+		doLayout(dc);
+	}
     /* ======================== Position handling ========================== */
 
 	function onPosition(info) {
@@ -124,7 +142,7 @@ const NoData = "No GPS Data";
 	    	Position.enableLocationEvents(Position.LOCATION_DISABLE, method(:onPosition));
 	    	updatingGPS = false;
         } else {
-    	    Position.enableLocationEvents(Position.LOCATION_CONTINUOUS, method(:onPosition));
+    	    Position.enableLocationEvents(mOptions, method(:onPosition));
 	        updatingGPS = true;
     	}
     	Ui.requestUpdate();
@@ -134,7 +152,7 @@ const NoData = "No GPS Data";
         if (updatingGPS == true) {
             return;
         }
-        Position.enableLocationEvents(Position.LOCATION_CONTINUOUS, method(:onPosition));
+   	    Position.enableLocationEvents(mOptions, method(:onPosition));
         updatingGPS = true;
     }
 
@@ -152,7 +170,8 @@ const NoData = "No GPS Data";
 		if ((mLocation == null || mAccuracy <= 1)) {return [NoData, "", ""];}
 		var useGrid = mGrid;
 		var rads = mLocation.toRadians();
-//rads = Position.parse("54.479613, -5.6991577", Position.GEO_DEG).toRadians();
+//rads = Position.parse("54.479613, -5.6991577", Position.GEO_DEG).toRadians(); //in overlap
+//rads = Position.parse("53.2839935, -9.1189576", Position.GEO_DEG).toRadians(); // Galway
 //   0.968 is 55.462315 degrees North, (Tor Rocks north of Inishtrahull) further North is treated as GB
 //  -0.093 is 5.328507 degrees West (East of Cannon Rock), further East is treated as GB
 //   0.896 is 51.337021 degrees North, (Fastnet Rock) further South is treated as GB
@@ -176,6 +195,10 @@ const NoData = "No GPS Data";
     function onUpdate(dc) {
 	    var GPS = ["None", "Last", "Poor", "Usable", "Good"];
 	    var acc;
+	    
+	    if (!mLaidOut) { 
+	    	doLayout(dc);
+	    }
 
 		if (updatingGPS == false) {
 			acc = "Fixed";
@@ -196,9 +219,11 @@ const NoData = "No GPS Data";
 					txt.locY = lpLocY;
 				}
 				txt.setText(gr[0]);
-//gr[1] = "289"; gr[2] = "378";
+//gr[1] = "289"; gr[2] = "377";
 				View.findDrawableById("valueE").setText(gr[1]);
+//	View.findDrawableById("valueE").setText("74277");
 				View.findDrawableById("valueN").setText(gr[2]);
+//	View.findDrawableById("valueN").setText("24272");
 			}
 			
        	}
@@ -228,8 +253,6 @@ class GridRefWidgetGlanceView extends Ui.GlanceView {
 		dc.setColor(Graphics.COLOR_BLACK,Graphics.COLOR_BLACK);
 		dc.clear();
 		dc.setColor(Graphics.COLOR_WHITE,Graphics.COLOR_TRANSPARENT);
-
 		dc.drawText(0, 15, Graphics.FONT_SMALL,"Grid Reference", Graphics.TEXT_JUSTIFY_LEFT);
 	}
-
 }

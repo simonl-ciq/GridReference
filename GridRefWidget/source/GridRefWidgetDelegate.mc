@@ -1,4 +1,3 @@
-
 using Toybox.WatchUi as Ui;
 
 class GridRefWidgetDelegate extends Ui.BehaviorDelegate {

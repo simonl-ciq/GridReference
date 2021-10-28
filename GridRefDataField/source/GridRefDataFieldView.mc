@@ -14,6 +14,7 @@ const OutSide = "Outside Grid";
 const NoData = "No GPS Data";
 
 class GridRefDataFieldView extends WatchUi.DataField {
+	hidden var mOnLayoutCalled = false;
 	hidden var mLaidOut = false;
 
     hidden var mDigits = cDigits;
@@ -139,6 +140,20 @@ class GridRefDataFieldView extends WatchUi.DataField {
 	    return adj;
     }
 
+	(:fr55)
+    function getYAdjust(dc, obscurityFlags) {
+    	var adj = -1;
+    	var height = dc.getHeight();
+		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				if (height < 90) {adj = 2;}
+		} else 
+		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+				if (height < 90 && mDigits != 10) {adj = 8;}
+				else {adj = 15;}
+		}
+	    return adj;
+    }
+
 	(:fr735xt)
     function getYAdjust(dc, obscurityFlags) {
     	var adj = -1;
@@ -186,10 +201,10 @@ class GridRefDataFieldView extends WatchUi.DataField {
 			adj = 20;
 		} else
 		if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
-			adj = (dc.getHeight() > 190) ? 15 : 12;
+			adj = (dc.getHeight() > 190) ? 15 : 0;
 		} else
 		if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
-			adj = (dc.getHeight() > 190) ? 25 : 20;
+			adj = (dc.getHeight() > 135) ? 40 : 20;
 		}
 	    return adj;
     }
@@ -392,6 +407,19 @@ class GridRefDataFieldView extends WatchUi.DataField {
 		return myF;
     }
 
+	(:fr55)
+    function doFont(valueView, ySpace, myF) {
+		var obs = DataField.getObscurityFlags();
+		if (obs == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT) || obs == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
+			myF = Gfx.FONT_LARGE;
+	    	if ((mDigits == 6 && ySpace == 43) || mDigits == 8 || mDigits == 10) {
+	    		myF = Gfx.FONT_SMALL;
+	    	}
+		}
+		valueView.setFont(myF);
+		return myF;
+    }
+
 	(:fr735xt)
     function doFont(valueView, ySpace, myF) {
 		var obs = DataField.getObscurityFlags();
@@ -466,7 +494,7 @@ class GridRefDataFieldView extends WatchUi.DataField {
 	(:venuair)
     function doFont(valueView, ySpace, myF) {
 		var obs = DataField.getObscurityFlags();
-		if (obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
+		if ((obs == (OBSCURE_LEFT | OBSCURE_RIGHT) && dc.getWidth() < 200) || obs == OBSCURE_LEFT || obs == OBSCURE_RIGHT) {
 			switch (mDigits) {
 			case 6:
 				myF = Gfx.FONT_SMALL;
@@ -481,7 +509,7 @@ class GridRefDataFieldView extends WatchUi.DataField {
 		} else
 		if (obs == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
    			if (mDigits == 10) {
-   				if (ySpace < 90) {
+   				if (ySpace < 96) {
 					myF = Gfx.FONT_SMALL;
 				}
 			}
@@ -493,7 +521,7 @@ class GridRefDataFieldView extends WatchUi.DataField {
 		} else
 		if (obs == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
    			if (mDigits == 10) {
-   				if (ySpace < 90) {
+   				if (ySpace < 96) {
 					myF = Gfx.FONT_SMALL;
 				}
 			}
@@ -585,6 +613,9 @@ class GridRefDataFieldView extends WatchUi.DataField {
 			var myF = doFont(valueView, ySpace, Gfx.FONT_LARGE);
 			var fh = dc.getFontHeight(myF);
 			valueView.locY = labelView.locY + labelHt  + (ySpace - fh) / 2 - yAdjust;
+	    } else {
+    	   	var valueView = View.findDrawableById("value");
+			var y = valueView.locY;
 	    }
 	}
 
@@ -1031,8 +1062,39 @@ class GridRefDataFieldView extends WatchUi.DataField {
     // Set your layout here. Anytime the size of obscurity of
     // the draw context is changed this will be called.
     function onLayout(dc) {
+    	mOnLayoutCalled = true;
     	mLaidOut = false;
         return true;
+    }
+
+(:not_venuair)
+    function venuBugfix (dc, obscurityFlags) {
+        // Middle sector so we'll use the generic, centered layout shrunk - 5
+        if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT)) {
+            View.setLayout(Rez.Layouts.MiddleCentreLayout(dc));
+
+        // Middle sector left so we'll use the generic, centered layout shrunk - 1
+        } else if (obscurityFlags == (OBSCURE_LEFT)) {
+            View.setLayout(Rez.Layouts.MiddleLeftLayout(dc));
+
+        // Middle sector right so we'll use the generic, centered layout shrunk - 4
+        } else if (obscurityFlags == (OBSCURE_RIGHT)) {
+            View.setLayout(Rez.Layouts.MiddleRightLayout(dc));
+        }
+    }
+
+(:venuair)    
+    function venuBugfix (dc, obscurityFlags) {
+        // Middle sector so we'll use the generic, centered layout shrunk - 5
+        if (dc.getWidth() > 200) {
+            View.setLayout(Rez.Layouts.MiddleCentreLayout(dc));
+
+        // Middle sector left so we'll use the generic, centered layout shrunk - 1
+        // Middle sector right so we'll use the generic, centered layout shrunk - 4
+        // Left & right layouts are the same for Venu
+        } else {
+            View.setLayout(Rez.Layouts.MiddleLeftLayout(dc));
+        }
     }
 
     function myLayout(dc) {
@@ -1050,17 +1112,9 @@ class GridRefDataFieldView extends WatchUi.DataField {
         } else if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_RIGHT)) {
             View.setLayout(Rez.Layouts.TopCentreLayout(dc));
 
-        // Middle sector so we'll use the generic, centered layout shrunk - 5
-        } else if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT)) {
-            View.setLayout(Rez.Layouts.MiddleCentreLayout(dc));
-
-        // Middle sector left so we'll use the generic, centered layout shrunk - 1
-        } else if (obscurityFlags == (OBSCURE_LEFT)) {
-            View.setLayout(Rez.Layouts.MiddleLeftLayout(dc));
-
-        // Middle sector right so we'll use the generic, centered layout shrunk - 4
-        } else if (obscurityFlags == (OBSCURE_RIGHT)) {
-            View.setLayout(Rez.Layouts.MiddleRightLayout(dc));
+        // Middle sectors so we'll use the generic, centered layout shrunk - 1/4/5
+        } else if (obscurityFlags == (OBSCURE_LEFT | OBSCURE_RIGHT) || obscurityFlags == OBSCURE_LEFT || obscurityFlags == OBSCURE_RIGHT ) {
+            venuBugfix(dc, obscurityFlags);
 
         // Bottom sector so we'll use the generic, centered layout upside down - 13
         } else if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT | OBSCURE_RIGHT)) {
@@ -1103,7 +1157,7 @@ class GridRefDataFieldView extends WatchUi.DataField {
 		if (info has :currentLocation && info.currentLocation != null && Accuracy > 1) {
 			var useGrid = mGrid;
 			var rads = info.currentLocation.toRadians();
-//rads = Position.parse("52.479613, -10.944677", Position.GEO_DEG).toRadians();
+// rads = Position.parse("52.479613, -10.944677", Position.GEO_DEG).toRadians();
 //   0.968 is 55.462315 degrees North, (Tor Rocks north of Inishtrahull) further North is treated as GB
 //  -0.093 is 5.328507 degrees West (East of Cannon Rock), further East is treated as GB
 //   0.896 is 51.337021 degrees North, (Fastnet Rock) further South is treated as GB
@@ -1131,7 +1185,9 @@ class GridRefDataFieldView extends WatchUi.DataField {
     // Display the value you computed here. This will be called
     // once a second when the data field is visible.
     function onUpdate(dc) {
-		if (!mLaidOut) {
+		if (!mOnLayoutCalled) {
+			return;
+		} else if (!mLaidOut) {
 			mLaidOut = myLayout(dc);
 		}
 		

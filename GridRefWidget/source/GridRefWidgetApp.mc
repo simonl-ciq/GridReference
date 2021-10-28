@@ -1,4 +1,5 @@
 using Toybox.Application as App;
+using Toybox.WatchUi;
 
 class GridRefWidgetApp extends App.AppBase {
 	hidden var GRView;
@@ -19,6 +20,14 @@ class GridRefWidgetApp extends App.AppBase {
     function getInitialView() {
         GRView = new GridRefWidgetView();
         return [ GRView, new GridRefWidgetDelegate(GRView) ];
+    }
+
+    // New app settings have been received so trigger a UI update
+    function onSettingsChanged() {
+    	if (GRView != null) {
+			GRView.getSettings();
+    	    WatchUi.requestUpdate();
+    	}
     }
 
 (:glance)

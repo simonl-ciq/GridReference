@@ -11,16 +11,16 @@
     </layout>
     <layout id="MiddleLeftLayout">
         <drawable class="Background" />
-        <label id="label" x="97" y="0" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_XTINY" />
-        <label id="value" x="97" y="40" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_XTINY" />
+        <label id="label" x="90" y="0" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_XTINY" />
+        <label id="value" x="90" y="40" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_XTINY" />
     </layout>
     <layout id="MiddleRightLayout">
         <drawable class="Background" />
-        <label id="label" x="97" y="0" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_XTINY" />
-        <label id="value" x="97" y="40" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_XTINY" />
+        <label id="label" x="90" y="0" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_XTINY" />
+        <label id="value" x="90" y="40" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_XTINY" />
     </layout>
     <layout id="BottomCentreLayout">
-        <drawable class="Background" ></drawable>
+        <drawable class="Background" />
         <label id="label" x="center" y="0" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_XTINY" />
         <label id="value" x="center" y="35" color="Graphics.COLOR_BLACK" justification="Graphics.TEXT_JUSTIFY_CENTER" font="Graphics.FONT_SMALL" />
     </layout>

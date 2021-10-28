@@ -1,2 +1,9 @@
+.gitignore
 */.settings/
 */bin/
+icons-etc/
+GridRefSimpleDFTests/
+GridRefWidgetTests/
+Original-GridRefDataField/
+*barrel
+*.txt
